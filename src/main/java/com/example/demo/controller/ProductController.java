@@ -1,3 +1,5 @@
+
+
 // package com.example.demo.controller;
 
 // import com.example.demo.model.Product;
@@ -8,14 +10,7 @@
 
 // @RestController
 // @RequestMapping("/api/products")
-
-// // ✅ CORS: cho phép frontend React (Vite) truy cập
-// @CrossOrigin(
-//         origins = "http://localhost:5173",
-//         allowedHeaders = "*",
-//         methods = {RequestMethod.GET, RequestMethod.POST,
-//                    RequestMethod.PUT, RequestMethod.DELETE}
-// )
+// @CrossOrigin(origins = "http://localhost:5173")
 // public class ProductController {
 
 //     private final ProductService service;
@@ -26,90 +21,78 @@
 
 //     // ================= CREATE =================
 //     @PostMapping
-//     public String createProduct(@RequestBody Product product) {
+//     public Product create(@RequestBody Product product) {
 //         service.create(product);
-//         return "Create product successfully";
+//         return product;
 //     }
 
 //     // ================= READ ALL =================
 //     @GetMapping
-//     public List<Product> getAllProducts() {
+//     public List<Product> getAll() {
 //         return service.getAll();
 //     }
 
 //     // ================= READ BY ID =================
 //     @GetMapping("/{id}")
-//     public Product getProductById(@PathVariable Long id) {
+//     public Product getById(@PathVariable Long id) {
 //         return service.getById(id);
 //     }
 
 //     // ================= UPDATE =================
 //     @PutMapping("/{id}")
-//     public String updateProduct(
-//             @PathVariable Long id,
-//             @RequestBody Product product
-//     ) {
+//     public void update(@PathVariable Long id,
+//                        @RequestBody Product product) {
 //         service.update(id, product);
-//         return "Update product successfully";
 //     }
 
 //     // ================= DELETE =================
 //     @DeleteMapping("/{id}")
-//     public String deleteProduct(@PathVariable Long id) {
+//     public void delete(@PathVariable Long id) {
 //         service.delete(id);
-//         return "Delete product successfully";
 //     }
 // }
 
-
 package com.example.demo.controller;
 
-import com.example.demo.model.Product;
-import com.example.demo.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
-    private final ProductService service;
+    @Autowired
+    @Qualifier("pgJdbcTemplate")
+    private JdbcTemplate jdbcTemplate;
 
-    public ProductController(ProductService service) {
-        this.service = service;
-    }
-
-    // ================= CREATE =================
-    @PostMapping
-    public Product create(@RequestBody Product product) {
-        service.create(product);
-        return product;
-    }
-
-    // ================= READ ALL =================
     @GetMapping
-    public List<Product> getAll() {
-        return service.getAll();
+    public List<Map<String, Object>> getAllProducts() {
+        return jdbcTemplate.queryForList(
+            """
+            SELECT id, title, price, description, photo, category_id
+            FROM product
+            ORDER BY id
+            """
+        );
     }
 
-    // ================= READ BY ID =================
-    @GetMapping("/{id}")
-    public Product getById(@PathVariable Long id) {
-        return service.getById(id);
-    }
+    @GetMapping("/category/{categoryId}")
+    public List<Map<String, Object>> getProductsByCategory(
+            @PathVariable Long categoryId) {
 
-    // ================= UPDATE =================
-    @PutMapping("/{id}")
-    public void update(@PathVariable Long id,
-                       @RequestBody Product product) {
-        service.update(id, product);
-    }
-
-    // ================= DELETE =================
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+        return jdbcTemplate.queryForList(
+            """
+            SELECT id, title, price, description, photo, category_id
+            FROM product
+            WHERE category_id = ?
+            ORDER BY id
+            """,
+            categoryId
+        );
     }
 }

@@ -4,41 +4,41 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @Configuration
 public class DualDataSourceConfig {
 
     // ===============================
-    // POSTGRES (LUÔN ACTIVE - local/prod)
+    // POSTGRES (TARGET - SUPABASE)
     // ===============================
     @Bean(name = "pgDataSource")
-    @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource pgDataSource() {
-        return DataSourceBuilder.create().build();
+        return new DriverManagerDataSource();
     }
 
     @Bean(name = "pgJdbcTemplate")
-    public JdbcTemplate pgJdbcTemplate(@Qualifier("pgDataSource") DataSource ds) {
+    public JdbcTemplate pgJdbcTemplate(
+            @Qualifier("pgDataSource") DataSource ds) {
         return new JdbcTemplate(ds);
     }
 
     // ===============================
-    // MYSQL (CHỈ LOCAL)
+    // MYSQL (SOURCE - LOCAL)
     // ===============================
     @Bean(name = "mysqlDataSource")
-    @Profile("local")
     @ConfigurationProperties(prefix = "mysql.datasource")
     public DataSource mysqlDataSource() {
-        return DataSourceBuilder.create().build();
+        return new DriverManagerDataSource();
     }
 
     @Bean(name = "mysqlJdbcTemplate")
-    @Profile("local")
-    public JdbcTemplate mysqlJdbcTemplate(@Qualifier("mysqlDataSource") DataSource ds) {
+    public JdbcTemplate mysqlJdbcTemplate(
+            @Qualifier("mysqlDataSource") DataSource ds) {
         return new JdbcTemplate(ds);
     }
 }

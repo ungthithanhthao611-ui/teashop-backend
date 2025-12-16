@@ -2,14 +2,14 @@ package com.example.demo.controller;
 
 import com.example.demo.service.DataMigrationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(produces = MediaType.TEXT_PLAIN_VALUE)
+@Profile("local") // ✅ chỉ chạy local
 public class MigrationController {
 
     @Autowired
@@ -21,9 +21,8 @@ public class MigrationController {
             migrationService.migrateAll();
             return ResponseEntity.ok("MIGRATION SUCCESS");
         } catch (Exception e) {
-            e.printStackTrace(); // log ra console
-            return ResponseEntity
-                    .internalServerError()
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
                     .body("MIGRATION FAILED: " + e.getMessage());
         }
     }

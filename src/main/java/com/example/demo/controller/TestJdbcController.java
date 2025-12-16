@@ -10,14 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestJdbcController {
 
     @Autowired
-    @Qualifier("pgJdbcTemplate") // 👈 CHỈ RÕ DÙNG POSTGRES
+    @Qualifier("pgJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     @GetMapping("/db-test")
     public String testDb() {
-        return jdbcTemplate.queryForObject(
-                "SELECT 'DB CONNECT OK'",
-                String.class
-        );
+        return jdbcTemplate.queryForObject("SELECT 'DB CONNECT OK'", String.class);
     }
 }
